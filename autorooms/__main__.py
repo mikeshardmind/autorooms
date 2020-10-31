@@ -14,14 +14,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import os
 import asyncio
+import os
+
 from .bot import ARBot
 
 try:
     import uvloop
 except ImportError:
     uvloop = None
+
 
 def main():
     if uvloop is not None:

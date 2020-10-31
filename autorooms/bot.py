@@ -13,11 +13,11 @@
 #   limitations under the License.
 
 import logging
+from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands
 from discord.voice_client import VoiceClient
-from datetime import timedelta, datetime
 
 VoiceClient.warn_nacl = False
 
@@ -33,7 +33,7 @@ class ARBot(commands.AutoShardedBot):
     def __init__(self, *args, **kwargs):
         kwargs.update(
             command_prefix=commands.when_mentioned,
-            acitivty=discord.Game(name='https://github.com/mikeshardmind/autorooms'),
+            acitivty=discord.Game(name="https://github.com/mikeshardmind/autorooms"),
             status=discord.Status.online,
             chunk_guilds_at_startup=False,
             max_messages=None,
