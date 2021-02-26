@@ -1,4 +1,4 @@
-#   Copyright 2017-2020 Michael Hall
+#   Copyright 2017-present Michael Hall
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -71,29 +71,17 @@ class ARBot(commands.AutoShardedBot):
 
     async def make_auto_room(self, member, chan):
 
-        category = chan.category
-
-        overwrites = chan.overwrites
-
-        if chan.guild.me in overwrites:
-            overwrites[chan.guild.me].update(
-                manage_channels=True, manage_roles=True, connect=True
-            )
-        else:
-            overwrites.update(
-                {
-                    chan.guild.me: discord.PermissionOverwrite(
-                        manage_channels=True, manage_roles=True, connect=True
-                    )
-                }
-            )
+        # This used to create the channel with modified overwrites ensuring the bot could manage it.
+        # This is no longer a reasonable way to handle this, and was unsound the moment I stopped using the members intent.
+        # Without that intent, you do not recieve all of the relevant overwrites in channel objects.
+        # This coupled with a different issue with permission overwrites which was
+        # fixed by discord made the bot seem inoperational in some cases.
 
         chan_name = f"{CLONEDROOM_STR}: {chan.name}".replace(AUTOROOM_STR, "")
 
         z = await chan.guild.create_voice_channel(
             chan_name,
-            category=category,
-            overwrites=overwrites,
+            category=chan.category,
             bitrate=chan.bitrate,
             user_limit=chan.user_limit,
         )

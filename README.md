@@ -4,6 +4,8 @@
 The bot clones channels which begin with the '⌛' character.
 Do not use this bot if you have any channels beginning with the '♻' character and care about those channels, the bot uses this character to denote temporary channels.
 
+This no longer copies channel overwrites due to not recieving all of them without the members intent and not copying them resulting in disallowed channel creation states.
+
 # (Quick) How to
 
 ```
