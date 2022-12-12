@@ -12,7 +12,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import logging
 from datetime import datetime, timedelta
 
 import discord
@@ -69,20 +68,52 @@ class ARBot(commands.AutoShardedBot):
                 if v_after.channel.name.startswith(AUTOROOM_STR):
                     await self.make_auto_room(member, v_after.channel)
 
-    async def make_auto_room(self, member, chan):
-
-        # This used to create the channel with modified overwrites ensuring the bot could manage it.
-        # This is no longer a reasonable way to handle this, and was unsound the moment I stopped using the members intent.
-        # Without that intent, you do not recieve all of the relevant overwrites in channel objects.
-        # This coupled with a different issue with permission overwrites which was
-        # fixed by discord made the bot seem inoperational in some cases.
+    async def make_auto_room(self, member: discord.Member, chan: discord.VoiceChannel):
 
         chan_name = f"{CLONEDROOM_STR}: {chan.name}".replace(AUTOROOM_STR, "")
+
+        overwrites = chan.overwrites.copy()
+
+        if chan.guild.me in overwrites:
+            overwrites[chan.guild.me].update(
+                manage_channels=True, manage_roles=True, connect=True
+            )
+        elif (me := discord.Object(chan.guild.me.id, type=discord.Member)) in overwrites:
+            overwrites[me].update(
+                manage_channels=True, manage_roles=True, connect=True
+            )            
+
+        else:
+            overwrites.update(
+                {
+                    chan.guild.me: discord.PermissionOverwrite(
+                        manage_channels=True, manage_roles=True, connect=True
+                    )
+                }
+            )
+
+        if member in overwrites:
+            overwrites[member].update(
+                manage_channels=True, manage_roles=True, connect=True
+            )
+        elif (memb_obj := discord.Object(chan.guild.me.id, type=discord.Member)) in overwrites:
+            overwrites[memb_obj].update(
+                manage_channels=True, manage_roles=True, connect=True
+            )
+        else:
+            overwrites.update(
+                {
+                    member: discord.PermissionOverwrite(
+                        manage_channels=True, manage_roles=True, connect=True
+                    )
+                }
+            )
 
         z = await chan.guild.create_voice_channel(
             chan_name,
             category=chan.category,
             bitrate=chan.bitrate,
             user_limit=chan.user_limit,
+            overwrites=overwrites,
         )
         await member.move_to(z, reason="autoroom")
