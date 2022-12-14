@@ -16,7 +16,7 @@
 
 import os
 
-from .bot import ARBot
+from autorooms.bot import ARBot
 
 try:
     import uvloop

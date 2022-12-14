@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands
+from discord.utils import utcnow
 from discord.voice_client import VoiceClient
 
 VoiceClient.warn_nacl = False
@@ -47,9 +48,9 @@ class ARBot(commands.AutoShardedBot):
         self.invite_link = discord.utils.oauth_url(data.id, permissions=perms)
         print(f"Use this link to add the bot to your server: {self.invite_link}")
 
-    async def on_voice_state_update(self, member, v_before, v_after):
+    async def on_voice_state_update(self, member: discord.Member, v_before: discord.VoiceState, v_after: discord.VoiceState):
 
-        if v_before.channel == v_after.channel:
+        if v_before.channel and v_after.channel and v_before.channel == v_after.channel:
             return
 
         guild = v_before.channel.guild if v_before.channel else None
@@ -58,7 +59,7 @@ class ARBot(commands.AutoShardedBot):
                 if (
                     channel.name.startswith(CLONEDROOM_STR)
                     and not channel.members
-                    and channel.created_at + timedelta(seconds=3) < datetime.utcnow()
+                    and channel.created_at + timedelta(seconds=3) < utcnow()
                 ):
                     await channel.delete(reason="Empty Autoroom")
 
