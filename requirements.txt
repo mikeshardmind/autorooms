@@ -1,0 +1,5 @@
+discord.py>=2.2.0, <3
+orjson>=3.5.4
+aiodns>=1.1
+Brotli
+uvloop>=0.17.0; platform_system != 'Windows'

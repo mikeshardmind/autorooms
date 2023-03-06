@@ -104,3 +104,9 @@ ENV/
 .vscode/
 
 .pypirc
+
+*.build
+*.onefile-build
+*.dist
+*.token
+*.exe

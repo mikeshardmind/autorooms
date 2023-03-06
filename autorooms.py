@@ -12,20 +12,26 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import os
 from datetime import timedelta
+from pathlib import Path
 
 import discord
-from discord.ext import commands
 from discord.utils import utcnow
-from discord.voice_client import VoiceClient
 
-VoiceClient.warn_nacl = False
+try:
+    import uvloop
+except ImportError:
+    uvloop = None
+
+
+__version__ = "5.0.1"
 
 AUTOROOM_STR = "\N{HOURGLASS}"
 CLONEDROOM_STR = "\N{BLACK UNIVERSAL RECYCLING SYMBOL}"
 
 
-class ARBot(commands.AutoShardedClient):
+class ARBot(discord.AutoShardedClient):
     """
     Autorooms bot
     """
@@ -94,3 +100,29 @@ class ARBot(commands.AutoShardedClient):
             overwrites=overwrites,
         )
         await member.move_to(z, reason="autoroom")
+
+
+def _get_token() -> str:
+    # TODO: keyrings, systemdcreds, etc
+    token = os.getenv("AUTOROOMTOKEN")
+    if not token:
+        tp = Path() / "autoroom.token"
+        try:
+            with tp.open(mode="r") as fp:
+                token = fp.read().strip()
+        except OSError:
+            msg = "NO TOKEN? (Use Environment `AUTOROOMTOKEN` or file `autoroom.token`)"
+            raise RuntimeError(msg) from None
+    return token 
+
+
+def main() -> None:
+    if uvloop is not None:
+        uvloop.install()
+    bot = ARBot()
+    token = _get_token()
+    bot.run(token)
+
+
+if __name__ == "__main__":
+    main()
