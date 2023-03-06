@@ -12,7 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import discord
 from discord.ext import commands
@@ -25,30 +25,32 @@ AUTOROOM_STR = "\N{HOURGLASS}"
 CLONEDROOM_STR = "\N{BLACK UNIVERSAL RECYCLING SYMBOL}"
 
 
-class ARBot(commands.AutoShardedBot):
+class ARBot(commands.AutoShardedClient):
     """
     Autorooms bot
     """
 
-    def __init__(self, *args, **kwargs):
-        kwargs.update(
-            command_prefix=commands.when_mentioned,
+    def __init__(self):
+        super().__init__(
+            max_messages=None,
             acitivty=discord.Game(name="https://github.com/mikeshardmind/autorooms"),
             status=discord.Status.online,
             chunk_guilds_at_startup=False,
-            max_messages=None,
             intents=discord.Intents(guilds=True, voice_states=True),
         )
-        super().__init__(*args, **kwargs)
 
     async def on_connect(self):
         await self.wait_until_ready()
         data = await self.application_info()
         perms = discord.Permissions(permissions=17825808)
         self.invite_link = discord.utils.oauth_url(data.id, permissions=perms)
-        print(f"Use this link to add the bot to your server: {self.invite_link}")
 
-    async def on_voice_state_update(self, member: discord.Member, v_before: discord.VoiceState, v_after: discord.VoiceState):
+    async def on_voice_state_update(
+        self,
+        member: discord.Member,
+        v_before: discord.VoiceState,
+        v_after: discord.VoiceState,
+    ):
 
         if v_before.channel and v_after.channel and v_before.channel == v_after.channel:
             return
@@ -74,41 +76,15 @@ class ARBot(commands.AutoShardedBot):
         chan_name = f"{CLONEDROOM_STR}: {chan.name}".replace(AUTOROOM_STR, "")
 
         overwrites = chan.overwrites.copy()
+        perm_kwargs = {"manage_channels": True, "manage_roles": True, "connect": True}
 
-        if chan.guild.me in overwrites:
-            overwrites[chan.guild.me].update(
-                manage_channels=True, manage_roles=True, connect=True
-            )
-        elif (me := discord.Object(chan.guild.me.id, type=discord.Member)) in overwrites:
-            overwrites[me].update(
-                manage_channels=True, manage_roles=True, connect=True
-            )            
-
-        else:
-            overwrites.update(
-                {
-                    chan.guild.me: discord.PermissionOverwrite(
-                        manage_channels=True, manage_roles=True, connect=True
-                    )
-                }
-            )
-
-        if member in overwrites:
-            overwrites[member].update(
-                manage_channels=True, manage_roles=True, connect=True
-            )
-        elif (memb_obj := discord.Object(chan.guild.me.id, type=discord.Member)) in overwrites:
-            overwrites[memb_obj].update(
-                manage_channels=True, manage_roles=True, connect=True
-            )
-        else:
-            overwrites.update(
-                {
-                    member: discord.PermissionOverwrite(
-                        manage_channels=True, manage_roles=True, connect=True
-                    )
-                }
-            )
+        for who in (chan.guild.me, member):
+            if who in overwrites:
+                overwrites[who].update(**perm_kwargs)
+            elif (who_obj := discord.Object(who.id, type=discord.Member)) in overwrites:
+                overwrites[who_obj].update(**perm_kwargs)
+            else:
+                overwrites[who] = discord.PermissionOverwrite(**perm_kwargs)
 
         z = await chan.guild.create_voice_channel(
             chan_name,

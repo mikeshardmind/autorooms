@@ -25,7 +25,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "discord.py==2.1.0",
+    "discord.py>=2.2.0, <3",
     "orjson>=3.5.4",
     "aiodns>=1.1",
     "Brotli",
@@ -50,3 +50,16 @@ include = ["/autorooms/*"]
 
 [project.scripts]
 discord-autorooms = "autorooms.__main__:main"
+
+
+[tool.ruff]
+
+line-length = 120
+target-version = "py38"
+select = [
+    "F", "E", "I", "C90", "UP", "YTT", "S", "BLE", "B", "A", "COM", "C4", "DTZ",
+    "EM", "ISC", "G", "INP", "PIE", "T20", "Q003", "RSE", "RET", "SIM", "TID", "PTH",
+    "ERA", "PD", "PLC", "PLE", "PLR", "PLW", "TRY", "NPY", "RUF"
+]
+ignore = ["G002", "TRY002", "S101", "PLR2004", "SIM102", "SIM105"]
+unfixable = ["C90", "S101", "ERA"]

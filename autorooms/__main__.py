@@ -24,11 +24,11 @@ except ImportError:
     uvloop = None
 
 
-def main():
+def main() -> None:
     if uvloop is not None:
         uvloop.install()
     bot = ARBot()
-    TOKEN = os.environ.get("AUTOROOMTOKEN")
+    TOKEN = os.getenv("AUTOROOMTOKEN")
     bot.run(TOKEN)
 
 
