@@ -3,3 +3,4 @@ orjson>=3.5.4
 aiodns>=1.1
 Brotli
 uvloop>=0.17.0; platform_system != 'Windows'
+keyring==23.13.1

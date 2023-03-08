@@ -12,20 +12,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import argparse
+import getpass
 import os
 from datetime import timedelta
-from pathlib import Path
 
 import discord
+import keyring
 from discord.utils import utcnow
 
 try:
-    import uvloop
+    import uvloop  # type: ignore
 except ImportError:
     uvloop = None
 
 
-__version__ = "5.0.1"
+__version__ = "5.0.2"
 
 AUTOROOM_STR = "\N{HOURGLASS}"
 CLONEDROOM_STR = "\N{BLACK UNIVERSAL RECYCLING SYMBOL}"
@@ -102,21 +104,26 @@ class ARBot(discord.AutoShardedClient):
         await member.move_to(z, reason="autoroom")
 
 
+def _get_keyring_creds() -> str | None:
+    user = getpass.getuser()
+    return keyring.get_password("discord-autorooms-token", user)
+
+
+def _set_keyring_creds(token: str, /):
+    user = getpass.getuser()
+    keyring.set_password("discord-autorooms-token", user, token)
+
+
 def _get_token() -> str:
-    # TODO: keyrings, systemdcreds, etc
-    token = os.getenv("AUTOROOMTOKEN")
+    # TODO: alternative token stores: systemdcreds, etc
+    token = os.getenv("AUTOROOMTOKEN") or _get_keyring_creds()
     if not token:
-        tp = Path() / "autoroom.token"
-        try:
-            with tp.open(mode="r") as fp:
-                token = fp.read().strip()
-        except OSError:
-            msg = "NO TOKEN? (Use Environment `AUTOROOMTOKEN` or file `autoroom.token`)"
-            raise RuntimeError(msg) from None
-    return token 
+        msg = "NO TOKEN? (Use Environment `AUTOROOMTOKEN` or launch with `--setup` to go through interactive setup)"
+        raise RuntimeError(msg) from None
+    return token
 
 
-def main() -> None:
+def run_bot() -> None:
     if uvloop is not None:
         uvloop.install()
     bot = ARBot()
@@ -124,5 +131,32 @@ def main() -> None:
     bot.run(token)
 
 
+def run_setup() -> None:
+    prompt = (
+        "Paste the discord token you'd like to use for this bot here (won't be visible) then press enter. "
+        "This will be stored in the system keyring for later use >"
+    )
+    token = getpass.getpass(prompt)
+    if not token:
+        msg = "Not storing empty token"
+        raise RuntimeError(msg)
+    _set_keyring_creds(token)
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="A minimal configuration discord bot for automatic voice channels")
+    excl = parser.add_mutually_exclusive_group()
+    excl.add_argument("--setup", action="store_true", default=False, help="Run interactive setup.", dest="isetup")
+    excl.add_argument(
+        "--set-token-to",
+        default=None,
+        dest="token",
+        help="Provide a token directly to be stored in the system keyring.",
+    )
+    args = parser.parse_args()
+    if args.isetup:
+        run_setup()
+    elif args.token:
+        _set_keyring_creds(args.token)
+    else:
+        run_bot()

@@ -10,12 +10,10 @@ With python (supported versions 3.8 through 3.11)
 AUTOROOMTOKEN='your discord bot token here' python autorooms.py
 ```
 
-Alternative (currently windows only) using a [standalone release](https://github.com/mikeshardmind/autorooms/releases/)
+You can also forgo the use of environment variables and instead use the system keyring as detected by the [keyring](https://pypi.org/project/keyring/) library
 
 ```
-$env:AUTOROOMTOKEN='your discord bot token here'
-./autorooms.exe
+python autorooms.py --setup
 ```
 
-You can also place a file alongside the executable named "autoroom.token" containing the token. 
-Standard "don't share your token and don't upload such a file publicly" rules apply.
+Will go through setup of this.
