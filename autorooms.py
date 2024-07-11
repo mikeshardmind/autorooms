@@ -27,7 +27,7 @@ except ImportError:
     uvloop = None
 
 
-__version__ = "5.0.2"
+__version__ = "5.0.3"
 
 AUTOROOM_STR = "\N{HOURGLASS}"
 CLONEDROOM_STR = "\N{BLACK UNIVERSAL RECYCLING SYMBOL}"
@@ -76,7 +76,7 @@ class ARBot(discord.AutoShardedClient):
         if v_after.channel is not None:
             guild = v_after.channel.guild
             if guild and guild.me.guild_permissions.value & 17825808 == 17825808:
-                if v_after.channel.name.startswith(AUTOROOM_STR):
+                if v_after.channel.name.startswith(AUTOROOM_STR) and isinstance(v_after.channel, discord.VoiceChannel):
                     await self.make_auto_room(member, v_after.channel)
 
     async def make_auto_room(self, member: discord.Member, chan: discord.VoiceChannel):
@@ -125,7 +125,7 @@ def _get_token() -> str:
 
 def run_bot() -> None:
     if uvloop is not None:
-        uvloop.install()
+        uvloop.install()  # type: ignore
     bot = ARBot()
     token = _get_token()
     bot.run(token)
