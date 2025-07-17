@@ -79,7 +79,8 @@ class ARBot(discord.AutoShardedClient):
                 if v_after.channel.name.startswith(AUTOROOM_STR) and isinstance(v_after.channel, discord.VoiceChannel):
                     await self.make_auto_room(member, v_after.channel)
 
-    async def make_auto_room(self, member: discord.Member, chan: discord.VoiceChannel):
+    @staticmethod
+    async def make_auto_room(member: discord.Member, chan: discord.VoiceChannel):
 
         chan_name = f"{CLONEDROOM_STR}: {chan.name}".replace(AUTOROOM_STR, "")
 

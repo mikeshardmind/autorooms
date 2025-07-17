@@ -1,5 +1,5 @@
-discord.py>=2.4.0, <3
-aiodns>=1.1
+discord.py>=2.5.2, <3
 Brotli
 uvloop>=0.17.0; platform_system != 'Windows'
 keyring>=23.13.1
+zstandard>=0.23.0
